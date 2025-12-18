@@ -20,7 +20,7 @@ const SignupPage = () => {
             const response = await axios.post("http://localhost:8080/api/v1/auth/register", formData)
             param.set("email", formData.email)
             alert('User Registered Successfully. Please Verify Your Email')
-            await router.push(`/verifyEmail?${param}`)
+            router.push(`/verifyEmail?${param}`)
             return response
         } catch (err) {
             console.log(err)

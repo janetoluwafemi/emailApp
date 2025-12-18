@@ -17,7 +17,7 @@ const VerifyEmail = () => {
         try {
             const response = axios.post("http://localhost:8080/api/v1/auth/verifyEmail", formData)
             alert('Email Verified Successfully')
-            await router.push('/login')
+            router.push('/login')
             return response
         } catch (error) {
             console.log(error)
