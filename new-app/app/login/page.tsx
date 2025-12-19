@@ -14,7 +14,7 @@ const Login = () => {
         setLoading(true);
         try {
             const response = await axios.post("http://localhost:8080/api/v1/auth/loginUser", formData)
-            return response
+            alert(response)
         } catch (err) {
             console.log(err)
         }

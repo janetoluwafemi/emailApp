@@ -15,10 +15,13 @@ const VerifyEmail = () => {
         e.preventDefault();
         setLoading(true)
         try {
-            const response = axios.post("http://localhost:8080/api/v1/auth/verifyEmail", formData)
-            alert('Email Verified Successfully')
-            router.push('/login')
-            return response
+            const response = await axios.post("http://localhost:8080/api/v1/auth/verifyEmail", formData)
+            if (response.status === 201 || response.status === 200) {
+                alert('Email Verified Successfully')
+                router.push('/login')
+            } else {
+                response.data.message && alert(response.data.message)
+            }
         } catch (error) {
             console.log(error)
         }
