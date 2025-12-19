@@ -9,8 +9,21 @@ const VerifyEmail = () => {
     const email = new URLSearchParams().get('email')
     const [formData, setFormData] = React.useState({
         email: email,
-        otp: ""
+        otp: [0, 0, 0, 0]
     })
+
+    const handleOPTInput = (index: number, value: string) => {
+        if (/^\d+$/.test(value)) {
+            const userOTP = formData.otp
+            userOTP[index] = value == '' ? 0 : parseInt(value)
+            setFormData({...formData, otp: userOTP})
+        }
+        if (value && index === 3) {
+            const next = document.getElementById(`otp-${index + 1}`)
+            next?.focus()
+        }
+    }
+
     const verifyEmail = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true)
@@ -34,12 +47,13 @@ const VerifyEmail = () => {
                 </div>
                 <form className="space-y-6" onSubmit={verifyEmail}>
                     <div className="flex justify-between gap-2 max-w-xs mx-auto">
-                        {[1, 2, 3, 4].map((index) => (
+                        {formData.otp.map((digit, index) => (
                             <input
                                 key={index}
+                                id={`otp-${index}`}
                                 type="text"
-                                value={formData.otp}
-                                onChange={(e) => setFormData({...formData, otp: e.target.value})}
+                                value={ digit === 0 ? "" : digit }
+                                onChange={(e) => handleOPTInput(index, e.target.value)}
                                 maxLength={1}
                                 className="w-12 h-14 text-center text-2xl font-extrabold text-blue-600 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                             />
