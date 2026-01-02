@@ -1,34 +1,50 @@
 'use client'
-import React, {useState} from 'react'
-import Router, {useRouter} from 'next/navigation'
+import React, {useRef, useState} from 'react'
+import {useRouter} from 'next/navigation'
 import axios from "axios";
 
 const VerifyEmail = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const email = new URLSearchParams().get('email')
+    const searchParams = new URLSearchParams(window.location.search);
+    const email = searchParams.get("email")
     const [formData, setFormData] = React.useState({
         email: email,
-        otp: [0, 0, 0, 0]
+        otp: ["", "", "", ""]
     })
 
-    const handleOPTInput = (index: number, value: string) => {
-        if (/^\d+$/.test(value)) {
-            const userOTP = formData.otp
-            userOTP[index] = value == '' ? 0 : parseInt(value)
-            setFormData({...formData, otp: userOTP})
-        }
-        if (value && index === 3) {
-            const next = document.getElementById(`otp-${index + 1}`)
-            next?.focus()
-        }
+    const inputs = useRef<(HTMLInputElement | null)[]>([]);
+    const joinedOtp = Number(formData.otp.join(""))
+    const changedToInt = {
+        email: email,
+        otp: joinedOtp
     }
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const val = e.target.value.replace(/\D/g, '');
+        setFormData(prev => {
+            const newOtp = [...prev.otp]
+            newOtp[index] = val
+            return { ...prev, otp: newOtp }
+        })
+        if (!/^\d*$/.test(val)) {
+            e.target.value = "";
+            return;
+        }
+        if (val && index < formData.otp.length - 1) {
+            inputs.current[index + 1]?.focus();
+        }
+    };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (e.key === 'Backspace' && !e.currentTarget.value && index > 0) {
+            inputs.current[index - 1]?.focus();
+        }
+    };
     const verifyEmail = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true)
         try {
-            const response = await axios.post("http://localhost:8080/api/v1/auth/verifyEmail", formData)
+            const response = await axios.post("http://localhost:8080/api/v1/auth/verifyEmail", changedToInt)
             if (response.status === 201 || response.status === 200) {
                 alert('Email Verified Successfully')
                 router.push('/login')
@@ -39,6 +55,8 @@ const VerifyEmail = () => {
             console.log(error)
         }
     }
+
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
@@ -47,17 +65,20 @@ const VerifyEmail = () => {
                 </div>
                 <form className="space-y-6" onSubmit={verifyEmail}>
                     <div className="flex justify-between gap-2 max-w-xs mx-auto">
-                        {formData.otp.map((digit, index) => (
-                            <input
-                                key={index}
-                                id={`otp-${index}`}
-                                type="text"
-                                value={ digit === 0 ? "" : digit }
-                                onChange={(e) => handleOPTInput(index, e.target.value)}
-                                maxLength={1}
-                                className="w-12 h-14 text-center text-2xl font-extrabold text-blue-600 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            />
-                        ))}
+                    {formData.otp.map((digit, index) => (
+                        <input
+                            key={index}
+                            ref={(el) => (inputs.current[index] = el)}
+                            type="text"
+                            value={digit}
+                            inputMode="numeric"
+                            maxLength={1}
+                            onChange={(e) => handleChange(e, index)}
+                            onKeyDown={(e) => handleKeyDown(e, index)}
+                            className="w-12 h-14 text-2xl font-bold text-black text-center border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:ring-0 outline-none transition-all"
+                            placeholder="0"
+                        />
+                    ))}
                     </div>
 
                     <button
@@ -69,7 +90,6 @@ const VerifyEmail = () => {
                 </form>
             </div>
         </div>
-    )
+    );
 }
-
 export default VerifyEmail;
