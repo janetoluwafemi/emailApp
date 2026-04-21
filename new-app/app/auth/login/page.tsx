@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import {useRouter} from "next/navigation";
 import axios from "axios";
 
 const Login = () => {
@@ -9,14 +10,21 @@ const Login = () => {
             password: ''
         })
     const [loading, setLoading] = React.useState(false)
+    const router = useRouter();
     const loginUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        const param = new URLSearchParams();
         try {
             const response = await axios.post("http://localhost:8080/api/v1/auth/loginUser", formData)
-            alert(response)
-        } catch (err) {
-            console.log(err)
+            alert(response.data.data.message)
+            if (response.data.data.message === "User logged in successfully") {
+                const token = response.data.data.token
+                router.push(`/user/getProducts?token=${token}`);
+            }
+        } catch (error) {
+            console.log(error)
+            alert(error)
         }
     }
     return (

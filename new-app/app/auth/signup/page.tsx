@@ -1,6 +1,6 @@
 'use client'
 import React, {useState} from 'react'
-import Router, {useRouter} from 'next/navigation'
+import {useRouter} from 'next/navigation'
 import axios from "axios";
 
 const SignupPage = () => {
@@ -20,14 +20,17 @@ const SignupPage = () => {
             const response = await axios.post("http://localhost:8080/api/v1/auth/register", formData)
             param.set("email", formData.email)
             if (response.status=== 201 || response.status === 200) {
-                alert('User Registered Successfully. Please Verify Your Email')
-                router.push(`/verifyEmail?${param}`)
+                alert(response.data.data.message)
+                if (response.data.success === true) {
+                    router.push(`/verifyEmail?${param}`)
+                }
             }
             else {
                 response.data.message && alert(response.data.message)
             }
-        } catch (err) {
-            console.log(err)
+        } catch (error) {
+            console.log(error)
+            alert(error)
         }
     }
     return (
@@ -96,7 +99,7 @@ const SignupPage = () => {
 
                 <p className="text-center text-sm text-gray-600">
                     Already have an account?{' '}
-                    <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                    <a href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
                         Sign in
                     </a>
                 </p>
